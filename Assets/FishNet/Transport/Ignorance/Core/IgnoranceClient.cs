@@ -11,6 +11,7 @@ using System.Buffers;
 using System.Collections.Concurrent;
 using System.Threading;
 using ENet;
+using FishNet;
 using UnityEngine;
 using Event = ENet.Event;           // fixes CS0104 ambigous reference between the same thing in UnityEngine
 using EventType = ENet.EventType;   // fixes CS0104 ambigous reference between the same thing in UnityEngine
@@ -18,7 +19,7 @@ using Object = System.Object;       // fixes CS0104 ambigous reference between t
 
 namespace IgnoranceTransport
 {
-    public class IgnoranceClient
+    public class IgnoranceClient : ClientTransport
     {
         // Client connection address and port
         public string ConnectAddress = "127.0.0.1";
@@ -49,9 +50,10 @@ namespace IgnoranceTransport
         // TO BE CONTINUED...
         // <------
 
-        public void Start()
+        public override void Start()
         {
             Console.WriteLine("IgnoranceClient.Start()");
+            base.SetConnectionState(ConnectionStates.Starting);
 
             if (WorkerThread != null && WorkerThread.IsAlive)
             {
@@ -83,10 +85,11 @@ namespace IgnoranceTransport
             Debug.Log("Client has dispatched worker thread.");
         }
 
-        public void Stop()
+        public override void Stop()
         {
             Debug.Log("Telling client thread to stop, this may take a while depending on network load");
             CeaseOperation = true;
+            base.SetConnectionState(ConnectionStates.Stopping);
         }
 
         // This runs in a seperate thread, be careful accessing anything outside of it's thread
@@ -136,6 +139,7 @@ namespace IgnoranceTransport
                 // TODO: Maybe try catch this
                 clientENetHost.Create();
                 clientPeer = clientENetHost.Connect(clientAddress, setupInfo.Channels);
+                base.SetConnectionState(ConnectionStates.Started);
 
                 while (!CeaseOperation)
                 {
@@ -312,6 +316,19 @@ namespace IgnoranceTransport
             Library.Deinitialize();
             if (setupInfo.Verbosity > 0)
                 Debug.Log("Client Worker Thread: Shutdown.");
+
+            base.SetConnectionState(ConnectionStates.Stopped);
+        }
+
+        public override void Send(int channelId, ArraySegment<byte> segment)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        public override void Shutdown()
+        {
+            throw new NotImplementedException();
         }
 
         // TODO: Optimize struct layout.

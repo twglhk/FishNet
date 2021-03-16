@@ -18,7 +18,7 @@ using System.Buffers;
 namespace IgnoranceTransport
 {
     [DisallowMultipleComponent]
-    public class Ignorance : Transport
+    public class Ignorance : MonoBehaviour
     {
         #region Inspector options
         public int port = 7777;
@@ -56,17 +56,6 @@ namespace IgnoranceTransport
         public IgnoranceClientStats ClientStatistics;
         #endregion
 
-#if MIRROR_26_0_OR_NEWER
-        public override bool Available()
-        {
-            // Ignorance is not available for Unity WebGL, the PS4 (no dev kit to confirm) or Switch (port exists but I have no access to said code).
-            // Ignorance is available for most other operating systems.
-#if (UNITY_WEBGL || UNITY_PS4 || UNITY_SWITCH)
-            return false;
-#else
-            return true;
-#endif
-        }
 
         public void Awake()
         {
@@ -573,6 +562,5 @@ namespace IgnoranceTransport
             }
         }
         #endregion
-#endif
     }
 }
